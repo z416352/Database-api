@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"Database/internal/db_services"
-	db_svc "Database/internal/db_services"
-	"Database/pkg/responses"
+	"github.com/z416352/Database-api/internal/db_services"
+	db_svc "github.com/z416352/Database-api/internal/db_services"
+	"github.com/z416352/Database-api/pkg/responses"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"

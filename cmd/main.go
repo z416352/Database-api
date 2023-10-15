@@ -3,7 +3,7 @@ package main
 import (
 	// db_svc "Database/internal/db_services"
 
-	gin_svc "Database/internal/gin_services"
+	gin_svc "github.com/z416352/Database-api/internal/gin_services"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package ginservices
 
 import (
-	"Database/internal/controllers"
+	"github.com/z416352/Database-api/internal/controllers"
 
 	"github.com/gin-gonic/gin"
 )

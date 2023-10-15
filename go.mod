@@ -1,4 +1,4 @@
-module Database
+module github.com/z416352/Database-api
 
 go 1.21.0
 
