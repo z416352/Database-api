@@ -1,11 +1,10 @@
 package db_services
 
 import (
-	"Crawler/pkg/logger"
-	"context"
 	"fmt"
-	"net"
 	"os"
+
+	"github.com/z416352/Crawler/pkg/logger"
 )
 
 type MongodbInfoK8s struct {
@@ -15,50 +14,38 @@ type MongodbInfoK8s struct {
 }
 
 type ConnectData struct {
-	ip           string
-	userName     string
-	userPassword string
-	port         string
-	MongodbInfo  *MongodbInfoK8s
+	userName           string
+	userPassword       string
+	mongoDB_Atlas_Info string
+	MongodbInfo        *MongodbInfoK8s
 }
 
 func (c *ConnectData) SetConnectData() *ConnectData {
-	// c.ip = os.Getenv("IP")
-	c.ip = c.getServiceIP()
-	c.port = "27017"
-	c.userName = os.Getenv("Name")
-	c.userPassword = os.Getenv("Pass")
+	c.userName = os.Getenv("MONGODB_USERNAME")
+	c.userPassword = os.Getenv("MONGODB_PASSWORD")
+	c.mongoDB_Atlas_Info = os.Getenv("Atlas_Info")
 
-	if c.port == "" || c.userName == "" || c.userPassword == "" {
-		logger.DBLog.Panicf("Set parameters. Enter in command line: Name=\"<UserName>\" Pass=\"<Password>\"")
+	if c.userName == "" || c.userPassword == "" {
+		params := []string{}
+
+		if c.userName == "" {
+			params = append(params, "MONGODB_USERNAME")
+		}
+
+		if c.userPassword == "" {
+			params = append(params, "MONGODB_PASSWORD")
+		}
+
+		if c.mongoDB_Atlas_Info == "" {
+			params = append(params, "Atlas_Info")
+		}
+
+		logger.DBLog.Panicf("Parameters Error. %v aren't set.", params)
 	}
 
 	return c
 }
 
 func (c *ConnectData) GetConnectURI() string {
-	return fmt.Sprintf("mongodb://%s:%s@%s:%s/", c.userName, c.userPassword, c.ip, c.port)
-}
-
-func (c *ConnectData) getServiceIP() string {
-	dnsName := c.MongodbInfo.ServiceName + "." + c.MongodbInfo.Namespace + ".svc.cluster.local"
-
-	// 使用指定的 DNS 服务器地址进行查询
-	resolver := &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			d := net.Dialer{}
-			return d.DialContext(ctx, "udp", c.MongodbInfo.K8sDNSIp+":53")
-		},
-	}
-
-	ips, err := resolver.LookupIPAddr(context.Background(), dnsName)
-	if err != nil {
-		fmt.Printf("无法解析 DNS 名称：%v\n", err)
-		os.Exit(1)
-	}
-
-	// fmt.Printf("服务 %s 的 IP 地址列表：\n", c.MongodbInfo.ServiceName)
-
-	return ips[0].String()
+	return fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority", c.userName, c.userPassword, c.mongoDB_Atlas_Info)
 }

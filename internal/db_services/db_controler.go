@@ -1,10 +1,11 @@
 package db_services
 
 import (
-	api "Crawler/pkg/apiservice"
-	"Crawler/pkg/logger"
 	"context"
 	"time"
+
+	api "github.com/z416352/Crawler/pkg/apiservice"
+	"github.com/z416352/Crawler/pkg/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,7 +25,7 @@ func InsertCrawlerData(klines []*api.BinanceAPI_Kline, collection *mongo.Collect
 	if err != nil {
 		logger.DBLog.Error(err)
 	}
-	logger.DBLog.Infof("Inserted '%d' K-lines data:", len(klines))
+	logger.DBLog.Debugf("Inserted '%d' K-lines data:", len(klines))
 
 	return result, err
 }

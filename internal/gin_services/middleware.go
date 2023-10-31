@@ -18,8 +18,9 @@ func restrictToLocalNetwork() gin.HandlerFunc {
 
 		// Define the local network IP ranges as strings
 		localNetworks := []string{
-			"192.168.166.0/24",
+			"192.168.0.0/16",
 			"127.0.0.1/32",
+			"10.79.128.0/17",
 		}
 
 		// Check if the client IP address is within any of the local network ranges

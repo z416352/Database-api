@@ -3,11 +3,12 @@ package controllers
 import (
 	// api "github.com/z416352/Crawler/Crawler/pkg/apiservice"
 	// "github.com/z416352/Crawler/Crawler/pkg/logger"
-	api "Crawler/pkg/apiservice"
-	"Crawler/pkg/logger"
 	"context"
 	"fmt"
 	"net/http"
+
+	api "github.com/z416352/Crawler/pkg/apiservice"
+	"github.com/z416352/Crawler/pkg/logger"
 
 	"github.com/z416352/Database-api/internal/db_services"
 	db_svc "github.com/z416352/Database-api/internal/db_services"

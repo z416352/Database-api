@@ -1,10 +1,11 @@
 package db_services
 
 import (
-	"Crawler/pkg/logger"
 	"context"
 	"fmt"
 	"slices"
+
+	"github.com/z416352/Crawler/pkg/logger"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
