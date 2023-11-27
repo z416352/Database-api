@@ -2,6 +2,7 @@ package db_services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	api "github.com/z416352/Crawler/pkg/apiservice"
@@ -68,15 +69,50 @@ func GetOneNewestData(collection *mongo.Collection) (*api.BinanceAPI_Kline, erro
 	defer cancel()
 
 	filter := bson.D{{}}
-
 	opts := options.FindOne().SetSort(bson.D{{"_id", -1}}) // Sort in descending order based on "_id" field
 
 	// Perform the find operation
 	var kline *api.BinanceAPI_Kline
 	err := collection.FindOne(ctx, filter, opts).Decode(&kline)
-	if err != nil {
+
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("no documents found")
+	} else if err != nil {
 		return nil, err
 	}
 
 	return kline, nil
+}
+
+func GetMultiNewestData(collection *mongo.Collection, n int) ([]*api.BinanceAPI_Kline, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.D{{}}
+
+	// Sort in descending order based on "_id" field and limit to n results
+	opts := options.Find().SetSort(bson.D{{"_id", -1}}).SetLimit(int64(n))
+
+	// Perform the find operation
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var klines []*api.BinanceAPI_Kline
+
+	for cursor.Next(ctx) {
+		var kline *api.BinanceAPI_Kline
+		if err := cursor.Decode(&kline); err != nil {
+			return nil, err
+		}
+		klines = append(klines, kline)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return klines, nil
 }

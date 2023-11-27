@@ -1,6 +1,9 @@
 package db_services
 
-var timeframeToCollectionMap = map[string]string{
+import "unicode"
+
+// collectionMap[<timeframe>] = collection
+var collectionMap = map[string]string{
 	"1m":  "m1",
 	"3m":  "m3",
 	"5m":  "m5",
@@ -18,7 +21,8 @@ var timeframeToCollectionMap = map[string]string{
 	"1M":  "M1", // 30 days
 }
 
-var collectionToTimeframeMap = map[string]string{
+// timeframeMap[<collection>] = timeframe
+var timeframeMap = map[string]string{
 	"m1":  "1m",
 	"m3":  "3m",
 	"m5":  "5m",
@@ -36,39 +40,30 @@ var collectionToTimeframeMap = map[string]string{
 	"M1":  "1M", // 30 days
 }
 
-func TimeframesToCollections(timeframes interface{}) interface{} {
-	switch timeframes.(type) {
-	case string:
-		return timeframeToCollectionMap[timeframes.(string)]
-
-	case []string:
-		var res []string
-
-		for _, timeframe := range timeframes.([]string) {
-			res = append(res, timeframeToCollectionMap[timeframe])
+func Transfer_TF_Coll(i interface{}) interface{} {
+	if s, ok := i.(string); ok {
+		if unicode.IsDigit(rune(s[0])) {
+			return collectionMap[s]
+		} else {
+			return timeframeMap[s]
 		}
-		return res
-
-	default:
-		return nil
 	}
 
-}
-
-func CollectionsToTimeframes(collections interface{}) interface{} {
-	switch collections.(type) {
-	case string:
-		return collectionToTimeframeMap[collections.(string)]
-
-	case []string:
+	if s, ok := i.([]string); ok {
 		var res []string
 
-		for _, coll := range collections.([]string) {
-			res = append(res, collectionToTimeframeMap[coll])
+		if unicode.IsDigit(rune(s[0][0])) {
+			for _, timeframe := range s {
+				res = append(res, collectionMap[timeframe])
+			}
+		} else {
+			for _, coll := range s {
+				res = append(res, timeframeMap[coll])
+			}
 		}
-		return res
 
-	default:
-		return nil
+		return res
 	}
+
+	return nil
 }

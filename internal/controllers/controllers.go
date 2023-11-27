@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	api "github.com/z416352/Crawler/pkg/apiservice"
 	"github.com/z416352/Crawler/pkg/logger"
@@ -20,7 +21,6 @@ import (
 )
 
 var target *api.BinanceCrawlTarget
-
 var client *mongo.Client
 
 // database_map[<Symbol>]
@@ -36,7 +36,7 @@ func init() {
 	database_map = db_svc.GetDatabase(client, target.Symbol_list)
 	collection_map = db_svc.GetCollection(
 		database_map,
-		db_svc.TimeframesToCollections(target.TimeFrame_list).([]string),
+		db_svc.Transfer_TF_Coll(target.TimeFrame_list).([]string),
 	)
 }
 
@@ -55,7 +55,7 @@ func InsertData() gin.HandlerFunc {
 
 		klines := request.Klines
 		symbol := request.Symbol
-		collection := db_svc.TimeframesToCollections(request.Timeframe).(string)
+		collection := db_svc.Transfer_TF_Coll(request.Timeframe).(string)
 
 		result, err := db_svc.InsertCrawlerData(klines, collection_map[symbol][collection])
 		if err != nil {
@@ -78,8 +78,17 @@ func GetData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		symbol := c.Param("symbol")
 		timeframe := c.Param("timeframe")
+		num, _ := strconv.Atoi(c.Param("num"))
 
-		kline, err := db_svc.GetOneNewestData(collection_map[symbol][db_svc.TimeframesToCollections(timeframe).(string)])
+		var kline *api.BinanceAPI_Kline
+		var klines []*api.BinanceAPI_Kline
+		var err error
+		if num == 1 {
+			kline, err = db_svc.GetOneNewestData(collection_map[symbol][db_svc.Transfer_TF_Coll(timeframe).(string)])
+		} else {
+			klines, err = db_svc.GetMultiNewestData(collection_map[symbol][db_svc.Transfer_TF_Coll(timeframe).(string)], num)
+		}
+
 		if err != nil {
 			logger.DBLog.Errorf("Err: %v", err)
 
@@ -91,11 +100,16 @@ func GetData() gin.HandlerFunc {
 			return
 		}
 
+		if num == 1 {
+			klines = append(klines, kline)
+		}
+
 		c.JSON(http.StatusOK, responses.UserResponse{
 			Status:  http.StatusOK,
 			Message: fmt.Sprintf("success"),
-			Data:    map[string]interface{}{"kline": kline},
+			Data:    map[string]interface{}{"klines": klines},
 		})
+
 	}
 }
 
@@ -112,7 +126,7 @@ func GetDBExist() gin.HandlerFunc {
 		}
 
 		collections, err := database_map[dbname].ListCollectionNames(context.TODO(), bson.M{})
-		timeframes := db_svc.CollectionsToTimeframes(collections).([]string)
+		timeframes := db_svc.Transfer_TF_Coll(collections).([]string)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, responses.UserResponse{

@@ -14,12 +14,6 @@ import (
 
 func ConnectDB() *mongo.Client {
 	c := new(ConnectData)
-	c.MongodbInfo = &MongodbInfoK8s{
-		ServiceName: "mongodb-service",
-		Namespace:   "mongodb",
-		K8sDNSIp:    "10.96.0.10",
-	}
-
 	c.SetConnectData()
 
 	// 设置连接选项

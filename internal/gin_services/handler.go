@@ -11,7 +11,7 @@ func Gin_handler(port string) {
 	router.Use(restrictToLocalNetwork())
 
 	router.POST("/prices", controllers.InsertData())
-	router.GET("/prices/:symbol/:timeframe", controllers.GetData())
+	router.GET("/prices/:symbol/:timeframe/:num", controllers.GetData())
 	router.GET("/mongodb/:dbname", controllers.GetDBExist())
 
 	router.Run(":" + port)
